@@ -1,29 +1,21 @@
 require "sinatra"
 require "sinatra/reloader"
+require_relative "services/rock_paper_scissors"
 
 get("/") do
   erb(:home)
 end
 
 get("/:move") do
-  @player_move = params.fetch("move")
-  puts @player_move
-  moves = ["rock" , "paper" , "scissor"]
-  @comp_move = moves.sample
-
-  winning_moves = {
-    "rock" => "scissor",
-    "paper" => "rock",
-    "scissor" => "paper"
-  }
-
-  if @player_move == @comp_move
-    @outcome = "tied"
-  elsif winning_moves[@player_move] == @comp_move
-    @outcome = "win"
-  else
-    @outcome = "lost"
-  end
+  rps = RockPaperScissors.new
+  rps.play(params.fetch("move"))
+  
+  @player_move = rps.player_move
+  @comp_move = rps.comp_move
+  @outcome = rps.outcome
 
   erb(:move)
+rescue RockPaperScissors::InvalidMoveError => e
+  @error = e.message
+  erb(:invalid_move)
 end
